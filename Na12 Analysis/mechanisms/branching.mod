@@ -5,7 +5,9 @@ ENDCOMMENT
 NEURON { SUFFIX nothing }
 
 VERBATIM
-
+#ifndef _NrnThread
+#define _NrnThread NrnThread
+#endif
 ENDVERBATIM
 PROCEDURE init_files(){
 	VERBATIM {
