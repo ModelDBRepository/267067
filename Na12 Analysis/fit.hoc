@@ -1,0 +1,63 @@
+dend_na12 =0.026145/2
+dend_k = 0.004226
+soma_na12 = 0.983955/2	
+soma_K = 0.303472
+node_na = 2
+axon_KP =0.973538
+axon_KT = 0.089259
+axon_K = 1.021945
+ais_na16		=	7 //3.137968
+ais_na12		=	5 //3.137968
+ais_ca = 0.000990
+ais_KCa = 0.007104
+
+
+
+
+soma_na16 = soma_na12
+naked_axon_na = soma_na16/5
+navshift = -10
+dend_na16 =dend_na12
+myelin_na = naked_axon_na
+myelin_K = 0.303472
+myelin_scale = 10
+gpas_all = 3e-5
+cm_all = 1
+
+
+
+
+proc tfunc(){
+
+    dend_na12 =transvec.x(0)
+	dend_k = transvec.x(1)
+	soma_na12 = transvec.x(2)
+	soma_K = transvec.x(3)
+	node_na = transvec.x(4)
+	axon_KP = transvec.x(5)
+	axon_KT = transvec.x(6)
+	axon_K = transvec.x(7)
+	ais_na16		=	transvec.x(8)
+	ais_na12		=	transvec.x(9)
+	ais_ca = transvec.x(10)
+	ais_KCa = transvec.x(11)
+	
+	
+	
+	
+	
+	
+	soma_na16 = soma_na12
+	naked_axon_na = soma_na16/5
+	navshift = -10
+	dend_na16 =dend_na12
+	myelin_na = naked_axon_na
+	myelin_K = 0.303472
+	myelin_scale = 10
+	gpas_all = 3e-5
+	cm_all = 1
+	
+	working()
+	}
+
+	

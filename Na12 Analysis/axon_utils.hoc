@@ -1,0 +1,236 @@
+proc initial_values(){
+	dend_na12 =0.0001/2
+	dend_k = 0.004226
+	soma_na12 = 0.983955/2	
+	soma_K = 0.303472
+	node_na = 2
+	axon_KP =0.973538
+	axon_KT = 0.089259
+	axon_K = 1.021945
+	ais_na16		=	7 //3.137968
+	ais_na12		=	5 //3.137968
+	ais_ca = 0.000990
+	ais_KCa = 0.007104
+
+
+
+	soma_na16 = soma_na12
+	naked_axon_na = soma_na16/5
+	navshift = -10
+	dend_na16 =dend_na12
+	myelin_na = naked_axon_na
+	myelin_K = 0.303472
+	myelin_scale = 10
+	gpas_all = 3e-5
+	cm_all = 1
+}
+
+// modify the axon for Roy's purposes (whole thing)
+proc populate_axon(){
+	forsec cell.axonal{
+			gNaTa_tbar_NaTa_t = 0
+			gNap_Et2bar_Nap_Et2 = 0
+			gCa_HVAbar_Ca_HVA = 0 
+			gSK_E2bar_SK_E2 = 0
+			nseg=11
+			g_pas(0:0.1) = (gpas_all/myelin_scale):(gpas_all/myelin_scale)
+			g_pas(0.1:1) = gpas_all:gpas_all
+			cm(0:0.1) = (cm_all/myelin_scale):(cm_all/myelin_scale)
+			cm(0.1:1) = cm_all:cm_all
+			gbar_na16(0:0.1) = node_na:node_na
+			gbar_na16(0.1:1) = myelin_na:myelin_na
+			gSKv3_1bar_SKv3_1(0:0.1) = axon_K:axon_K
+			gSKv3_1bar_SKv3_1(0.1:1) = myelin_K:myelin_K
+			gK_Pstbar_K_Pst(0:0.1) = axon_KP:axon_KP
+			gK_Pstbar_K_Pst(0.1:1) = axon_KP/10:axon_KP/10
+			gK_Tstbar_K_Tst(0:0.1) = axon_KT:axon_KT
+			gK_Tstbar_K_Tst(0.1:1) = axon_KT/10:axon_KT/10	
+		}
+}
+proc populate_axon_young(){
+	forsec cell.axonal{ 
+	gbar_na16 = 0
+			insert na1216
+			insert na1216mut
+			gNaTa_tbar_NaTa_t = 0
+			gNap_Et2bar_Nap_Et2 = 0
+			gCa_HVAbar_Ca_HVA = 0 
+			gSK_E2bar_SK_E2 = 0
+			nseg=11
+			g_pas(0:0.1) = (gpas_all/myelin_scale):(gpas_all/myelin_scale)
+			g_pas(0.1:1) = gpas_all:gpas_all
+			cm(0:0.1) = (cm_all/myelin_scale):(cm_all/myelin_scale)
+			cm(0.1:1) = cm_all:cm_all
+			gbar_na1216mut(0:0.1) = node_na/2:node_na/2
+			gbar_na1216(0:0.1) = node_na/2:node_na/2
+			gbar_na1216(0.1:1) = myelin_na/2:myelin_na/2
+			gbar_na1216mut(0.1:1) = myelin_na/2:myelin_na/2
+			gSKv3_1bar_SKv3_1(0:0.1) = axon_K:axon_K
+			gSKv3_1bar_SKv3_1(0.1:1) = myelin_K:myelin_K
+			gK_Pstbar_K_Pst(0:0.1) = axon_KP:axon_KP
+			gK_Pstbar_K_Pst(0.1:1) = axon_KP/10:axon_KP/10
+			gK_Tstbar_K_Tst(0:0.1) = axon_KT:axon_KT
+			gK_Tstbar_K_Tst(0.1:1) = axon_KT/10:axon_KT/10	
+		}
+}
+
+
+// Specifically modify the first segment to create an AIS
+proc create_ais(){
+access cell.axon[0]
+
+	gNaTa_tbar_NaTa_t = 0 // Get rid of old sodium channels
+	gNap_Et2bar_Nap_Et2 = 0  // Get rid of old sodium channels
+	nseg = int(L/10)*2 +1  // create 19 segments from this axon section
+	ais_end = 10/nseg // specify the end of the AIS as halfway down this section
+	ais_mid = 4/nseg // specify the middle of the AIS as 1/5 of this section 
+	gbar_na16(0:ais_mid) = 0:ais_na16 // from the start to mid of AIS, create gradient of NaV1.6
+	gbar_na16(ais_mid:ais_end) = ais_na16:ais_na16 // add consistent amount NaV1.6 until the end of the AIS
+	gbar_na16(ais_end:1) = naked_axon_na:naked_axon_na // 1/5th nav1.6
+	gbar_na12(0:ais_mid/2) = soma_na12/2:ais_na12/2 // create gradient of NaV12 from [soma] to [AIS]
+	gbar_na12mut(0:ais_mid/2) = soma_na12/2:ais_na12/2 // add a mutant channel in case we want to do a het
+	gbar_na12(ais_mid/2:ais_mid) = ais_na12/2:0 // create gradient down to zero
+	gbar_na12mut(ais_mid/2:ais_mid) = ais_na12/2:0 // more mutant channel
+	gbar_na12(ais_mid:1) = 0:0 //naked axon
+	gbar_na12mut(ais_mid:1) = 0:0 //naked axon
+	gK_Pstbar_K_Pst(0:ais_end) = axon_KP:axon_KP
+	gK_Pstbar_K_Pst(ais_end:1) = axon_KP/10:axon_KP/10
+	gK_Tstbar_K_Tst(0:ais_end) = axon_KT:axon_KT
+	gK_Tstbar_K_Tst(ais_end:1) = axon_KT/10:axon_KT/10
+	gSKv3_1bar_SKv3_1(0:ais_end) = axon_K:axon_K
+	gSKv3_1bar_SKv3_1(ais_end:1) = axon_K/10:axon_K/10
+	gCa_HVAbar_Ca_HVA(0:ais_end) = ais_ca:ais_ca
+	gCa_HVAbar_Ca_HVA(0:ais_end) = ais_ca/10:ais_ca/10
+	gSK_E2bar_SK_E2(0:ais_end) = ais_KCa:ais_KCa // SK channel
+	gSK_E2bar_SK_E2(ais_end:1) = ais_KCa/10:ais_KCa/10
+	
+			
+	
+access cell.soma
+}
+proc create_ais_young(){
+access cell.axon[0]
+gbar_na16 = 0
+	gNaTa_tbar_NaTa_t = 0
+	gNap_Et2bar_Nap_Et2 = 0
+	nseg = int(L/10)*2 +1
+	ais_end = 10/nseg
+	ais_mid = 4/nseg
+	//Replacing 16 with 1/2 12 and half 12mut
+	gbar_na1216(0:ais_mid) = 0:ais_na16/2
+	gbar_na1216mut(0:ais_mid) = 0:ais_na16/2
+	gbar_na1216(ais_mid:ais_end) = ais_na16/2:ais_na16/2
+	gbar_na1216mut(ais_mid:ais_end) = ais_na16/2:ais_na16/2
+	gbar_na1216(ais_end:1) = naked_axon_na/2:naked_axon_na/2 //naked axon
+	gbar_na1216mut(ais_end:1) = naked_axon_na/2:naked_axon_na/2 //naked axon
+	//
+	gbar_na12(0:ais_mid/2) = soma_na12/2:ais_na12/2
+	gbar_na12mut(0:ais_mid/2) = soma_na12/2:ais_na12/2
+	gbar_na12(ais_mid/2:ais_mid) = ais_na12/2:0
+	gbar_na12mut(ais_mid/2:ais_mid) = ais_na12/2:0
+	gbar_na12(ais_mid:1) = 0:0 //naked axon
+	gbar_na12mut(ais_mid:1) = 0:0 //naked axon
+	gK_Pstbar_K_Pst(0:ais_end) = axon_KP:axon_KP
+	gK_Pstbar_K_Pst(ais_end:1) = axon_KP/10:axon_KP/10
+	gK_Tstbar_K_Tst(0:ais_end) = axon_KT:axon_KT
+	gK_Tstbar_K_Tst(ais_end:1) = axon_KT/10:axon_KT/10
+	gSKv3_1bar_SKv3_1(0:ais_end) = axon_K:axon_K
+	gSKv3_1bar_SKv3_1(ais_end:1) = axon_K/10:axon_K/10
+	gCa_HVAbar_Ca_HVA(0:ais_end) = ais_ca:ais_ca
+	gCa_HVAbar_Ca_HVA(0:ais_end) = ais_ca/10:ais_ca/10
+	gSK_E2bar_SK_E2(0:ais_end) = ais_KCa:ais_KCa
+	gSK_E2bar_SK_E2(ais_end:1) = ais_KCa/10:ais_KCa/10
+	
+			
+	
+access cell.soma
+}
+
+
+proc update_soma_na(){
+access cell.soma
+
+vShift_na = navshift
+	gbar_na12 = soma_na12/2
+	gbar_na12mut = soma_na12/2
+	gbar_na16 = soma_na16
+	gNaTs2_tbar_NaTs2_t = 0
+
+}
+proc update_soma_na_young(){
+access cell.soma
+insert na1216
+insert na1216mut
+gbar_na16 = 0
+vShift_na = navshift
+	gbar_na12 = soma_na12/2 
+	gbar_na12mut = soma_na12/2 
+	gbar_na1216 = soma_na16/2
+	gbar_na1216mut = soma_na16/2
+	gNaTs2_tbar_NaTs2_t = 0
+
+}
+proc update_dend_na(){
+forsec cell.apical{
+	
+	gbar_na12 = dend_na12/2
+	gbar_na12mut = dend_na12/2
+	gbar_na16 = dend_na16
+	gNaTs2_tbar_NaTs2_t = 0
+	
+	
+	}
+}
+proc update_dend_na_young(){
+forsec cell.apical{
+	insert na1216
+	insert na1216mut
+	gbar_na12 = dend_na12/2 
+	gbar_na16 = 0
+	gbar_na12mut = dend_na12/2 
+	gNaTs2_tbar_NaTs2_t = 0
+	gbar_na1216 = dend_na16/2
+	gbar_na1216mut = dend_na16/2
+	
+	}
+}
+
+
+proc working(){
+populate_axon()
+create_ais()
+update_soma_na()
+update_dend_na()
+
+
+}
+proc working_young(){
+populate_axon_young()
+create_ais_young()
+update_soma_na_young()
+update_dend_na_young()
+
+
+}
+proc run_gui(){
+		
+xpanel("params_values")
+xvalue("ais_na12",&ais_na12	)
+xvalue("ais_na16",&ais_na16)
+xvalue("node_na",&node_na)
+xvalue("soma_na16",&soma_na16) 
+xvalue("na_soma",&navshift)
+xbutton("create_ais()")
+xbutton("populate_axon()")
+xbutton("update_soma_na()")
+//xbutton("printVs()")
+xpanel()
+}
+//run_gui()
+initial_values()  
+access cell.axon[0]
+	L=90
+		
+access cell.soma
+working()
+
