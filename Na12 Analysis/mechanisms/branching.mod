@@ -8,6 +8,13 @@ VERBATIM
 #ifndef _NrnThread
 #define _NrnThread NrnThread
 #endif
+#ifdef NRN_MECHANISM_DATA_IS_SOA
+#define get_nnode(sec) _nrn_mechanism_get_nnode(sec)
+#define get_node(sec, node_index) _nrn_mechanism_get_node(sec, node_index)
+#else
+#define get_nnode(sec) sec->nnode
+#define get_node(sec, node_index) sec->pnode[node_index]
+#endif
 ENDVERBATIM
 PROCEDURE init_files(){
 	VERBATIM {
@@ -30,13 +37,13 @@ Section* sec;
 	Node* nd;
 	sec = chk_access();
 	if (_lx < 0. || _lx > 1.) {
-	//printf("_lx is %f and _lx*(double)(sec->nnode-1) is %f\n",_lx,_lx*(double)(sec->nnode-1));
+	//printf("_lx is %f and _lx*(double)(get_nnode(sec)-1) is %f\n",_lx,_lx*(double)(get_nnode(sec)-1));
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
 	}
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int) (_lx*(double)(get_nnode(sec)-1)));
 	}
 	return NODEA(nd);
 }
@@ -51,13 +58,13 @@ Section* sec;
 	Node* nd;
 	sec = chk_access();
 	if (_lx < 0. || _lx > 1.) {
-		//printf("_lx is %f and _lx*(double)(sec->nnode-1) is %f\n",_lx,_lx*(double)(sec->nnode-1));
+		//printf("_lx is %f and _lx*(double)(get_nnode(sec)-1) is %f\n",_lx,_lx*(double)(get_nnode(sec)-1));
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
 	}
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int) (_lx*(double)(get_nnode(sec) - 1)));
 	}
 	return NODEB(nd);
 }
@@ -75,9 +82,9 @@ Section* sec;
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
 	}
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int) (_lx*(double)(get_nnode(sec)-1)));
 	}
 	//printf("index is %d,NODEA(nd) is %f _la is %f\n",nd->v_node_index,NODEA(nd),_la);
 	NODEA(nd) = _la;
@@ -96,9 +103,9 @@ Section* sec;
 		hoc_execerror("out of range, must be 0 < x <= 1", (char*)0);
 	}
 	if (_lx == 1.) {
-		nd = sec->pnode[sec->nnode-1];
+		nd = get_node(sec, get_nnode(sec) - 1);
 	}else{
-		nd = sec->pnode[(int) (_lx*(double)(sec->nnode-1))];
+		nd = get_node(sec, (int) (_lx*(double)(get_nnode(sec)-1)));
 	}
 	//printf("index is %d,NODEB(nd) is %f _lb is %f\n",nd->v_node_index,NODEB(nd),_lb);
 	NODEB(nd) = _lb;
@@ -124,19 +131,19 @@ fclose(fm);
 }
 ENDVERBATIM
 }
-PROCEDURE MyAdb() {
-VERBATIM {
-	int ii;
-#if defined(t)
-	_NrnThread* _nt = nrn_threads;
-#endif
-for(ii=0;ii<_nt->end;ii++){
-
-printf("%d,%1.15f %1.15f %1.15f %1.15f\n",ii, _nt->_actual_a[ii],_nt->_actual_d[ii],_nt->_actual_b[ii],_nt->_actual_rhs[ii]);
-}
-}
-ENDVERBATIM
-}
+:PROCEDURE MyAdb() {
+:VERBATIM {
+:	int ii;
+:#if defined(t)
+:	_NrnThread* _nt = nrn_threads;
+:#endif
+:for(ii=0;ii<_nt->end;ii++){
+:
+:printf("%d,%1.15f %1.15f %1.15f %1.15f\n",ii, _nt->_actual_a[ii],_nt->_actual_d[ii],_nt->_actual_b[ii],_nt->_actual_rhs[ii]);
+:}
+:}
+:ENDVERBATIM
+:}
 
 PROCEDURE PrintRHS_D() {
 VERBATIM {

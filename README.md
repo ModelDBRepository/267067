@@ -20,3 +20,4 @@ For additional information, please contact bens.roy@gmail.com or henry.kyoung@uc
 
 ## Changelog
 2023-02-28: updated for C++ compatibility (NEURON 9+)
+2023-04-20: updated for SoA data compatibility (NEURON 9+)
