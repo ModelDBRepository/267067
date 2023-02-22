@@ -131,19 +131,19 @@ fclose(fm);
 }
 ENDVERBATIM
 }
-PROCEDURE MyAdb() {
-VERBATIM {
-	int ii;
-#if defined(t)
-	_NrnThread* _nt = nrn_threads;
-#endif
-for(ii=0;ii<_nt->end;ii++){
-
-printf("%d,%1.15f %1.15f %1.15f %1.15f\n",ii, _nt->_actual_a[ii],_nt->_actual_d[ii],_nt->_actual_b[ii],_nt->_actual_rhs[ii]);
-}
-}
-ENDVERBATIM
-}
+:PROCEDURE MyAdb() {
+:VERBATIM {
+:	int ii;
+:#if defined(t)
+:	_NrnThread* _nt = nrn_threads;
+:#endif
+:for(ii=0;ii<_nt->end;ii++){
+:
+:printf("%d,%1.15f %1.15f %1.15f %1.15f\n",ii, _nt->_actual_a[ii],_nt->_actual_d[ii],_nt->_actual_b[ii],_nt->_actual_rhs[ii]);
+:}
+:}
+:ENDVERBATIM
+:}
 
 PROCEDURE PrintRHS_D() {
 VERBATIM {
